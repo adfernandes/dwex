@@ -181,6 +181,13 @@ def monkeypatch():
                 cur_offset = child._terminator.offset + child._terminator.size
     elftools.dwarf.compileunit.CompileUnit.iter_DIE_children = iter_DIE_children
 
+    # Fix for DW_FORM_strx
+    orig_create_structs = elftools.dwarf.dwarfinfo.DWARFStructs._create_structs
+    def _create_structs(self):
+        orig_create_structs(self)
+        self.Dwarf_dw_form['DW_FORM_strx'] = self.the_Dwarf_uleb128
+    elftools.dwarf.dwarfinfo.DWARFStructs._create_structs = _create_structs
+
     # Short out import directory parsing for now
     filebytes.pe.PE._parseDataDirectory = lambda self,a,b,c: None
 

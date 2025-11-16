@@ -141,8 +141,11 @@ def top_die_file_name(die, Default = 'N/A'):
         if val > 0:
             if die.cu._lineprogram is None:
                 die.cu._lineprogram = die.dwarfinfo.line_program_for_CU(die.cu)
-            delta = 1 if die.cu.version < 5 else 0
-            return strip_path(die.cu._lineprogram.header.file_entry[val-delta].name.decode('utf-8', errors='ignore'))
+            if die.cu._lineprogram: # No lineprogram is effectively corruption
+                delta = 1 if die.cu.header.version < 5 else 0
+                return strip_path(die.cu._lineprogram.header.file_entry[val-delta].name.decode('utf-8', errors='ignore'))
+            else:
+                return "(unknown)"
     return Default
 
  # See #1742
