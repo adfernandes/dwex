@@ -21,7 +21,7 @@ def decorate_di(di, f, a, sa):
     di._use_siblings = not(f in (0, 4) and a in ("EM_PPC", 'EM_PPC64'))
 
 def read_pe(filename):
-    from filebytes.pe import PE, IMAGE_FILE_MACHINE, BinaryError
+    from .filebytes.pe import PE, IMAGE_FILE_MACHINE, BinaryError
     import struct, zlib
 
     try:
@@ -95,7 +95,7 @@ def read_pe(filename):
 
 # CPU type, CPU subtupe - numeric
 def make_macho_arch_name_raw(c, st):
-    from filebytes.mach_o import CpuType, CpuSubTypeARM, CpuSubTypeARM64
+    from .filebytes.mach_o import CpuType, CpuSubTypeARM, CpuSubTypeARM64
     flavor = ''
     if st != 0:
         if c == CpuType.ARM:
@@ -115,7 +115,7 @@ def make_macho_arch_name(macho):
         
 # For debugging purposes only - dump individual debug related sections in a Mach-O file/slice as files
 def macho_save_sections(filename, macho):
-    from filebytes.mach_o import LC
+    from .filebytes.mach_o import LC
     arch = make_macho_arch_name(macho)
     for cmd in macho.loadCommands:
         if cmd.header.cmd in (LC.SEGMENT, LC.SEGMENT_64):
@@ -245,7 +245,7 @@ def macho_arch_code(macho):
 
 def get_macho_dwarf(macho, slice_code):
     """Slice_code is (arch_name,) or (arch_name, file_name) or None"""
-    from filebytes.mach_o import TypeFlags, LC, MH
+    from .filebytes.mach_o import TypeFlags, LC, MH
     # We proceed with macho being a arch-specific file, or a slice within a fat binary
     sections = {
         section.name: section.bytes
@@ -345,7 +345,7 @@ def open_macho(filename, contents=None):
     """ Wrapper around the filebytes' MachO constructor
         that translates filebytes' exceptions to our own
     """
-    from filebytes.mach_o import MachO, BinaryError
+    from .filebytes.mach_o import MachO, BinaryError
     try:
         return MachO(filename, contents)
     except BinaryError as err:
@@ -353,7 +353,7 @@ def open_macho(filename, contents=None):
 
 # TODO: don't load the whole binary, load just the right slice
 def load_companion_executable(filename, di):
-    from filebytes.mach_o import LC, MH
+    from .filebytes.mach_o import LC, MH
     if path.isdir(filename):
         binary = binary_from_bundle(filename)
         if not binary:
@@ -383,7 +383,7 @@ def load_companion_executable(filename, di):
     add_macho_sections_from_executable(di, macho)
 
 def add_macho_sections_from_executable(di, macho):
-    from filebytes.mach_o import LC
+    from .filebytes.mach_o import LC
     sections = {
         section.name: section
         for cmd in macho.loadCommands
@@ -634,7 +634,7 @@ def read_staticlib(file, resolve_slice):
         if di:
             di._slice_code = slice_code
     elif b[:4] in (b'\xFE\xED\xFA\xCE', b'\xFE\xED\xFA\xCF', b'\xCE\xFA\xED\xFE', b'\xCF\xFA\xED\xFE'):
-        from filebytes.mach_o import MachO
+        from .filebytes.mach_o import MachO
         macho = open_macho(None, b)
         di = get_macho_dwarf(macho, slice_code)
     elif b[:4] == b'\xCA\xFE\xBA\xBE':

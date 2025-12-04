@@ -10,8 +10,8 @@ import elftools.dwarf.locationlists
 import elftools.elf.elffile
 import elftools.elf.dynamic
 import elftools.dwarf.dwarfinfo
-import filebytes.mach_o
-import filebytes.pe
+#import filebytes.mach_o
+#import filebytes.pe
 from elftools.common.utils import struct_parse
 from elftools.common.exceptions import DWARFError
 from elftools.dwarf.descriptions import _DESCR_DW_CC
@@ -21,7 +21,7 @@ from elftools.elf.sections import Section
 from elftools.elf.dynamic import Dynamic
 from elftools.dwarf.locationlists import LocationLists, LocationListsPair
 from elftools.construct.core import StaticField
-from filebytes.mach_o import LSB_64_Section, MH, SectionData, LoadCommand, LoadCommandData, LC
+#from filebytes.mach_o import LSB_64_Section, MH, SectionData, LoadCommand, LoadCommandData, LC
 
 # Good reference on DWARF extensions here:
 # https://sourceware.org/elfutils/DwarfExtensions
@@ -187,68 +187,3 @@ def monkeypatch():
         orig_create_structs(self)
         self.Dwarf_dw_form['DW_FORM_strx'] = self.the_Dwarf_uleb128
     elftools.dwarf.dwarfinfo.DWARFStructs._create_structs = _create_structs
-
-    # Short out import directory parsing for now
-    filebytes.pe.PE._parseDataDirectory = lambda self,a,b,c: None
-
-    # Expand the logic in DSYM bundle loading to load the unwind sections too
-    def __parseSections(self, data, segment, offset):
-        sections = []
-        for i in range(segment.nsects):
-            sec = self._classes.Section.from_buffer(data, offset)
-            if self._classes.Section == LSB_64_Section:
-                offset += 80
-            else:
-                offset += sizeof(self._classes.Section)
-
-            if sec.offset > 0:
-                raw = (c_ubyte * sec.size).from_buffer(data, sec.offset)
-                bytes = bytearray(raw)
-            else:
-                raw = None
-                bytes = None
-            sections.append(SectionData(header=sec, name=sec.sectname.decode('ASCII'), bytes=bytes, raw=raw))
-
-        return sections
-    
-    filebytes.mach_o.MachO._MachO__parseSections = __parseSections
-
-    # SYMTAB parsing - LE only, but filebytes is broken anyway in that regard
-    class SymtabCommand(LittleEndianStructure):
-        _pack_ = 4
-        _fields_ = [('cmd', c_uint),
-            ('cmdsize', c_uint),
-            ('symbols_offset', c_uint),
-            ('nsymbols', c_uint),
-            ('strings_offset', c_uint),
-            ('nstrings', c_uint)]
-        
-    def _parseLoadCommands(self, data, machHeader):
-        offset = sizeof(self._classes.MachHeader)
-        load_commands = []
-        for i in range(machHeader.header.ncmds):
-            command = LoadCommand.from_buffer(data, offset)
-            raw = (c_ubyte * command.cmdsize).from_buffer(data, offset)
-
-            if command.cmd == LC.SEGMENT or command.cmd == LC.SEGMENT_64:
-                command = self._MachO__parseSegmentCommand(data, offset, raw)
-            elif command.cmd == LC.UUID:
-                command = self._MachO__parseUuidCommand(data, offset, raw)
-            elif command.cmd == LC.TWOLEVEL_HINTS:
-                command = self._MachO__parseTwoLevelHintCommand(data, offset, raw)
-            elif command.cmd in (LC.ID_DYLIB, LC.LOAD_DYLIB, LC.LOAD_WEAK_DYLIB):
-                command = self._MachO__parseDylibCommand(data, offset, raw)
-            elif command.cmd in (LC.ID_DYLINKER, LC.LOAD_DYLINKER):
-                command = self._MachO__parseDylibCommand(data, offset, raw)
-            elif command.cmd == LC.SYMTAB:
-                uc = SymtabCommand.from_buffer(data, offset)
-                command = LoadCommandData(header=uc)
-            else:
-                command = LoadCommandData(header=command)
-
-            load_commands.append(command)
-
-            offset += command.header.cmdsize
-
-        return load_commands
-    filebytes.mach_o.MachO._parseLoadCommands = _parseLoadCommands
