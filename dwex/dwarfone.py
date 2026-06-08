@@ -6,7 +6,7 @@ from bisect import bisect_left
 from elftools.dwarf.dwarfinfo import DwarfConfig, DebugSectionDescriptor
 from elftools.dwarf.die import AttributeValue
 from elftools.dwarf.structs import DWARFStructs
-from elftools.common.utils import struct_parse, bytelist2string
+from elftools.common.utils import struct_parse
 from elftools.dwarf.enums import ENUM_DW_TAG, ENUM_DW_AT, ENUM_DW_FORM
 from elftools.construct import CString
 from elftools.dwarf.lineprogram import LineProgramEntry, LineState
@@ -273,6 +273,12 @@ class LineTableV1(object):
     
     def __getitem__(self, name):
         return self.header[name]
+
+def bytelist2string(bytelist):
+    """ Convert a list of byte values (e.g. [0x10 0x20 0x00]) to a bytes object
+        (e.g. b'\x10\x20\x00').
+    """
+    return b''.join(bytes((b,)) for b in bytelist)
 
 class DWARFExprParserV1(object):
     def __init__(self, structs):
