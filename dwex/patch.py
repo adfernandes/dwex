@@ -57,7 +57,7 @@ def monkeypatch():
     
     elftools.dwarf.locationlists.LocationLists.get_location_lists_at_offset_ex = get_location_list_at_offset_ex
     # Same for the pair object
-    elftools.dwarf.locationlists.LocationListsPair.get_location_lists_at_offset_ex = lambda self, offset: self._loclists.get_location_lists_at_offset_ex(offset)
+    elftools.dwarf.locationlists.LocationListsPair.get_location_lists_at_offset_ex = lambda self, offset, die=None: self._loclists.get_location_lists_at_offset_ex(offset, die)
 
     # Fix for a corollary of 1683
     def get_range_list_at_offset(self, offset, cu=None):
