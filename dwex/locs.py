@@ -81,7 +81,8 @@ def show_location(self, attr):
             lines = [(f"0x{pc:x}", desc_CFA_rule(cfa_rule)) for (pc, cfa_rule) in rules]
             return GenericTableModel(("Address", "CFA expression"), lines)
         else:
-            return ExpressionTableModel(self.parse_expr(ll.loc_expr), self.expr_formatter)
+            el = self.parse_expr(ll.loc_expr)
+            return ExpressionTableModel(el, self.expr_formatter)
     else: # Loclist - location lines in the details window, double-click navigates to expression
         return self.show_loclist(ll, attr.value)
     

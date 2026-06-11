@@ -143,6 +143,12 @@ class TheWindow(QMainWindow):
             di._aranges = None
             di._frames = None # Loaded on first use, False means missing
             def decorate_cu(cu, i):
+                # Fix for 1799
+                if cu.header.version == 2 and cu.header.address_size == 4 and cu.structs.dwarf_format == 64:
+                    from elftools.dwarf.structs import DWARFStructs
+                    cu.structs = DWARFStructs(
+                        little_endian=cu.structs.little_endian,
+                        dwarf_format=32, address_size=4)
                 cu._i = i
                 cu._lineprogram = None
                 cu._exprparser = None
