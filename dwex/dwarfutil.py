@@ -577,3 +577,9 @@ def parse_location(loc, cu, address):
 
 def quote_filename(fn):
     return f'"{fn}"' if ' ' in fn else fn
+
+def format_tag(tag, prefix):
+    if isinstance(tag, int): # Happens with user tags, #1472
+        return ('DW_TAG_user_%X' if prefix else 'user_%X') % tag
+    else:
+        return tag if prefix or not str(tag).startswith('DW_TAG_') else tag[7:]

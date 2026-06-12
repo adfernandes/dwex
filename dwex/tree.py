@@ -7,7 +7,7 @@ from elftools.dwarf.die import DIE
 from elftools.dwarf.compileunit import CompileUnit
 
 from .fx import bold_font, blue_brush
-from .dwarfutil import DIE_has_name, DIE_name, has_code_location, safe_DIE_name, top_die_file_name
+from .dwarfutil import DIE_has_name, DIE_name, has_code_location, safe_DIE_name, top_die_file_name, format_tag
 from .dwarfone import DIEV1
 
 
@@ -125,10 +125,7 @@ class DWARFTreeModel(QAbstractItemModel):
             if die.tag == 'DW_TAG_compile_unit' or die.tag == 'DW_TAG_partial_unit': # CU/top die: return file name
                 return top_die_file_name(die)
             else: # Return tag, with name if possible
-                if isinstance(die.tag, int): # Happens with user tags, #1472
-                    s = ('DW_TAG_user_%X' if self.prefix else 'user_%X') % die.tag
-                else:
-                    s = die.tag if self.prefix or not str(die.tag).startswith('DW_TAG_') else die.tag[7:]
+                s = format_tag(die.tag, self.prefix)
                 if DIE_has_name(die):
                     s += ": " + DIE_name(die)
                 return s

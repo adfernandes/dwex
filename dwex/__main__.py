@@ -17,9 +17,10 @@ from .unwind import UnwindDlg
 from .funcmap import FuncMapDlg, GatherFuncsThread
 from .fx import WaitCursor, ArrowCursor
 from .treedlg import TreeDlg
+from .abbrevs import AbbrevsDlg
 
 # Sync with version in setup.py
-version = (4, 81)
+version = (4, 85)
 the_app = None
 
 # TODO:
@@ -462,6 +463,7 @@ class TheWindow(QMainWindow):
             self.followref_menuitem.setEnabled(False)
             self.followref_tbitem.setEnabled(False)
             self.cuproperties_menuitem.setEnabled(True)
+            self.abbrevs_menuitem.setEnabled(True)
             self.die_table.setCurrentIndex(QModelIndex()) # Will cause on_attribute_selection
 
             #TODO: resize the attribute table vertically dynamically
@@ -826,6 +828,11 @@ class TheWindow(QMainWindow):
                 s = "DWARF version:\t%d\nAddress size:\t%d" % props
             t = "CU at 0x%x" % cu.cu_offset
             QMessageBox(QMessageBox.Icon.Information, t, s, QMessageBox.StandardButton.Ok, self).show()
+
+    def on_abbrevs(self):
+        die = self.the_tree.currentIndex().internalPointer()
+        if die:
+            AbbrevsDlg(self, die.cu, self.lowlevel, self.hex, self.prefix).show()
 
     def on_copy(self, v):
         cb = QApplication.clipboard()

@@ -101,7 +101,7 @@ class DIETableModel(QAbstractTableModel):
                     (target_cu, target_offset) = rt
                     target = target_cu.get_DIE_from_refaddr(target_offset)
                     if target and not target.is_null():
-                        tip = self.format_tag(target.tag) + ' ' + safe_DIE_name(target, '(unknown)') + '\n'
+                        tip = format_tag(target.tag, self.prefix) + ' ' + safe_DIE_name(target, '(unknown)') + '\n'
                 tip += "Double-click to follow"
             elif attr.form in ('DW_FORM_ref_sig8', 'DW_FORM_ref_sup4', 'DW_FORM_ref_sup8'):
                 tip += "Unsupported reference format"
@@ -437,9 +437,6 @@ class DIETableModel(QAbstractTableModel):
         
     def format_attr_name(self, key):
         return key if self.prefix or not str(key).startswith('DW_AT_') else key[6:]
-    
-    def format_tag(self, tag):
-        return tag if self.prefix or not str(tag).startswith('DW_TAG_') else tag[7:]
 
 def on_details_row_dclick(index, o, win):
     # For now, used for drilling into DWARF expressions

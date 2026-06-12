@@ -91,7 +91,7 @@ class LocalsDlg(LoadedModuleDlgBase):
         if di._locparser is None:
             di._locparser = LocationParser(di.location_lists())
         if not di._ranges:
-            di._ranges = di.range_lists()            
+            di._ranges = di.range_lists()
         if not di._aranges:
             di._aranges = di.get_aranges()
 
